@@ -16,11 +16,15 @@ const clientOptions: ClientOptions = {
 };
 
 function getServerOptions(context: ExtensionContext): ServerOptions {
-    let executableName = "gitignore_ultimate_server";
-    if (process.platform === "win32") executableName += ".exe";
+    // let executableName = "gitignore_ultimate_server";
+    // if (process.platform === "win32") executableName += ".exe";
 
+    let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+    const serverModule = context.asAbsolutePath(join("bin/gitignore-ultimate-server/src", "main.js"));
     return {
-        command: context.asAbsolutePath(join("bin", executableName)),
+        // command: "node " + context.asAbsolutePath(join("bin/gitignore-ultimate-server/src", "main.js")),
+        run: { module: serverModule },
+        debug: { options: debugOptions, module: serverModule },
     };
 }
 
