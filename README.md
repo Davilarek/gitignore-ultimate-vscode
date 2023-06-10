@@ -23,6 +23,10 @@ This extension uses [Gitignore Ultimate Server](https://github.com/Davilarek/git
 
 <img width="290" alt="image" src="https://user-images.githubusercontent.com/12123721/113505935-148b8480-9542-11eb-9c27-2862e5af6092.png">
 
+## Known issues
+This js port is still WIP, so except bugs.
+- https://github.com/Davilarek/gitignore-ultimate-server/issues/1
+
 ## Run this extension from sources
 
 1. Clone this project and run `pnpm install`.
