@@ -5,3 +5,4 @@ node_modules
 *.vsix
 bin/**
 !bin/.gitkeep
+/gitignore-ultimate-vscode.code-workspace
