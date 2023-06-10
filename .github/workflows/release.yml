@@ -2,81 +2,45 @@ name: Release
 
 on:
   push:
-    tags: [ "*" ]
+    branches:
+      - js-port
 
 jobs:
   package:
-    name: Package (${{ matrix.name }})
+    name: Package
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Windows
-            bin: x86_64-pc-windows-msvc.exe
-            vscode-platform: win32-x64
-            extension: .exe
-
-          - name: Windows ARM
-            bin: aarch64-pc-windows-msvc.exe
-            vscode-platform: win32-arm64
-            extension: .exe
-
-          - name: macOS
-            bin: x86_64-apple-darwin
-            vscode-platform: darwin-x64
-
-          - name: macOS ARM
-            bin: aarch64-apple-darwin
-            vscode-platform: darwin-arm64
-
-          - name: Linux
-            bin: x86_64-unknown-linux-gnu
-            vscode-platform: linux-x64
-
-          - name: Linux ARM
-            bin: aarch64-unknown-linux-gnu
-            vscode-platform: linux-arm64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Download gitignore-ultimate-server
-        run: gh release download --repo quentinguidee/gitignore-ultimate-server --pattern ${{ matrix.bin }} --dir "bin"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Rename gitignore-ultimate-server
-        run: |
-          rm bin/.gitkeep
-          mv bin/* bin/gitignore_ultimate_server${{ matrix.extension }}
-
-      - name: Change executable permissions
-        run: |
-          chmod u+x bin/gitignore_ultimate_server${{ matrix.extension }}
+        run: git clone https://github.com/davilarek/gitignore-ultimate-server.git bin/gitignore-ultimate-server
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.5.1
 
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
 
-      - name: Run tests
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: yarn run test
+      # - name: Run tests
+      #   uses: coactions/setup-xvfb@v1
+      #   with:
+      #     run: pnpm run test
 
       - name: Build
-        run: yarn run vsce package --target ${{ matrix.vscode-platform }} --out gitignore-ultimate-vscode-${{ matrix.vscode-platform }}.vsix --githubBranch main
+        run: pnpm exec vsce package --out gitignore-ultimate-vscode.vsix --githubBranch "js-port"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: gitignore-ultimate-vscode-${{ matrix.vscode-platform }}.vsix
-          path: gitignore-ultimate-vscode-${{ matrix.vscode-platform }}.vsix
+          name: gitignore-ultimate-vscode.vsix
+          path: gitignore-ultimate-vscode.vsix
 
   release-github:
     name: Release (GitHub)
@@ -104,38 +68,38 @@ jobs:
         with:
           files: releases/*
 
-  release-marketplace:
-    name: Release (Marketplace)
-    needs: package
-    runs-on: ubuntu-latest
+  # release-marketplace:
+  #   name: Release (Marketplace)
+  #   needs: package
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         path: artifacts
 
-      - name: Copy artifacts
-        run: |
-          mkdir releases
-          for file in artifacts/*/*; do
-            file=${file#artifacts/}
-            folder=${file%%/*}
-            cp -v artifacts/$file releases/$folder
-          done
+  #     - name: Copy artifacts
+  #       run: |
+  #         mkdir releases
+  #         for file in artifacts/*/*; do
+  #           file=${file#artifacts/}
+  #           folder=${file%%/*}
+  #           cp -v artifacts/$file releases/$folder
+  #         done
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
 
-      - name: Install dependencies
-        run: yarn global add vsce
+  #     - name: Install dependencies
+  #       run: yarn global add vsce
 
-      - name: Release
-        run: |
-          for file in releases/*; do
-            vsce publish -p ${{ secrets.VSCODE_MARKETPLACE }} --packagePath $file --githubBranch main
-          done
+  #     - name: Release
+  #       run: |
+  #         for file in releases/*; do
+  #           vsce publish -p ${{ secrets.VSCODE_MARKETPLACE }} --packagePath $file --githubBranch main
+  #         done
