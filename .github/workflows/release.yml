@@ -21,23 +21,23 @@ jobs:
         with:
           node-version: 18
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8.5.1
+      # - uses: pnpm/action-setup@v2
+      #   with:
+      #     version: 8.5.1
 
       - name: Install dependencies
-        run: pnpm install
+        run: yarn install
       - run: |
           cd bin/gitignore-ultimate-server
-          pnpm install
+          yarn install
 
       # - name: Run tests
       #   uses: coactions/setup-xvfb@v1
       #   with:
-      #     run: pnpm run test
+      #     run: yarn run test
 
       - name: Build
-        run: pnpm exec vsce package --out gitignore-ultimate-vscode.vsix --githubBranch "js-port"
+        run: yarn run vsce package --out gitignore-ultimate-vscode.vsix --githubBranch "js-port"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
